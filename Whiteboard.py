@@ -63,7 +63,7 @@ class AnnotationApp:
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
-        self.pen_width = 5  # 默认笔的粗细为3
+        self.pen_width = 5  # 默认笔的粗细为5
         self.current_pen_width = 5  # 当前的笔宽度
 
         # 定义初始橡皮大小
@@ -107,7 +107,7 @@ class AnnotationApp:
         # 笔的大小调节控件
         self.pen_label = ttk.Label(root, text="笔的粗细:")
         self.pen_label.pack(side="left", padx=10, pady=10)
-        self.pen_width_scale = Scale(root, from_=0, to=10, orient=tk.HORIZONTAL,tickinterval=1, command=self.change_pen_width, length=200,showvalue=True)
+        self.pen_width_scale = Scale(root, from_=0, to=15, orient=tk.HORIZONTAL,tickinterval=1, command=self.change_pen_width, length=300,showvalue=True)
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
 
@@ -138,14 +138,17 @@ class AnnotationApp:
     def draw(self, event):
         if self.is_drawing:
             if self.current_color == self.canvas.cget("background"):  # 使用橡皮擦
-                self.canvas.create_oval(event.x-self.current_eraser_width, event.y-self.current_eraser_width,
-                                        event.x+self.current_eraser_width, event.y+self.current_eraser_width,
+                self.canvas.create_oval(event.x - self.current_eraser_width, event.y - self.current_eraser_width,
+                                        event.x + self.current_eraser_width, event.y + self.current_eraser_width,
                                         fill=self.current_color, outline="")
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
-                width = int(self.current_pen_width * (1 - (distance / 100)))  # 根据距离计算线条宽度
+                acceleration = 2  # 设置加速度
+                width = int(self.current_pen_width * (1 - (distance / 100)) + acceleration)  # 根据距离和加速度计算线条宽度（模拟笔锋）
+                minimum_width = 2  # 模拟笔锋的最低粗细
+                width = max(width, minimum_width)  # 确保线条宽度不低于最低粗细
                 self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
-                                        fill=self.current_color, width=width)
+                                        fill=self.current_color, width=width, smooth=True, splinesteps=100)  # 使用样条曲线绘制
                 self.start_x = event.x
                 self.start_y = event.y
         
