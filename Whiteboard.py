@@ -63,8 +63,8 @@ class AnnotationApp:
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
-        self.pen_width = 3  # 默认笔的粗细为3
-        self.current_pen_width = 3  # 当前的笔宽度
+        self.pen_width = 5  # 默认笔的粗细为3
+        self.current_pen_width = 5  # 当前的笔宽度
 
         # 定义初始橡皮大小
         self.eraser_width = 10  # 默认橡皮的粗细为10
