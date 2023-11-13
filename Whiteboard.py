@@ -31,6 +31,7 @@
 #        *                  不见满街漂亮妹，哪个归得程序员？
 #        *
 #
+import time
 from datetime import datetime
 import tkinter as tk
 from tkinter import Scale, ttk
@@ -62,8 +63,8 @@ class AnnotationApp:
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
-        self.pen_width = 5  # 默认笔的粗细为5
-        self.current_pen_width = 5  # 当前的笔宽度
+        self.pen_width = 3  # 默认笔的粗细为3
+        self.current_pen_width = 3  # 当前的笔宽度
 
         # 定义初始橡皮大小
         self.eraser_width = 10  # 默认橡皮的粗细为10
@@ -106,7 +107,7 @@ class AnnotationApp:
         # 笔的大小调节控件
         self.pen_label = ttk.Label(root, text="笔的粗细:")
         self.pen_label.pack(side="left", padx=10, pady=10)
-        self.pen_width_scale = Scale(root, from_=0, to=15, orient=tk.HORIZONTAL,tickinterval=1, command=self.change_pen_width, length=300,showvalue=True)
+        self.pen_width_scale = Scale(root, from_=0, to=10, orient=tk.HORIZONTAL,tickinterval=1, command=self.change_pen_width, length=200,showvalue=True)
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
 
@@ -133,24 +134,21 @@ class AnnotationApp:
         self.is_drawing = True
         self.start_x = event.x
         self.start_y = event.y
-
+    
     def draw(self, event):
         if self.is_drawing:
             if self.current_color == self.canvas.cget("background"):  # 使用橡皮擦
-                self.canvas.create_oval(event.x - self.current_eraser_width, event.y - self.current_eraser_width,
-                                        event.x + self.current_eraser_width, event.y + self.current_eraser_width,
+                self.canvas.create_oval(event.x-self.current_eraser_width, event.y-self.current_eraser_width,
+                                        event.x+self.current_eraser_width, event.y+self.current_eraser_width,
                                         fill=self.current_color, outline="")
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
-                acceleration = 0.5  # 设置加速度
-                width = int(self.current_pen_width * (1 - (distance / 100)) + acceleration)  # 根据距离和加速度计算线条宽度（模拟笔锋）
-                minimum_width = 2  # 模拟笔锋的最低粗细
-                width = max(width, minimum_width)  # 确保线条宽度不低于最低粗细
+                width = int(self.current_pen_width * (1 - (distance / 100)))  # 根据距离计算线条宽度
                 self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
-                                        fill=self.current_color, width=width, smooth=True, splinesteps=100)  # 使用样条曲线绘制
+                                        fill=self.current_color, width=width)
                 self.start_x = event.x
                 self.start_y = event.y
-
+        
     def stop_drawing(self, event):
         self.is_drawing = False
         
@@ -255,7 +253,7 @@ class AnnotationApp:
             self.save_page_content()
  
     def about(self):
-        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.6α\n作者：Pigeons2023\n贡献者：wuqi9277")
+        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.6\n作者：Pigeons2023")
 
     def open_website(self):
         url = "https://pigeonserver.xyz"  # 打开官网
@@ -373,6 +371,93 @@ class AnnotationApp:
         else:
             self.result_label.config(text="请先导入参与者名单")
 
+    def time(self):
+        self.time = tk.Toplevel(root)
+        self.time.title("计时器")
+        self.time.wm_attributes("-topmost", True)
+        self.participants = []
+
+        # 时钟部分
+        self.clock_label = tk.Label(self.time, font=('calibri', 40, 'bold'), background='purple', foreground='white')
+        self.clock_label.pack(fill='both', expand=1)
+        self.clock_running = True
+        self.update_clock()
+
+        # 计时器部分
+        self.timer_label = tk.Label(self.time, text="计时器", font=('calibri', 20, 'bold'))
+        self.timer_label.pack()
+        self.start_time = None
+        self.timer_running = False
+        self.timer_text = tk.StringVar()
+        self.timer_text.set("00:00:00")
+        self.timer_display = tk.Label(self.time, textvariable=self.timer_text, font=('calibri', 40, 'bold'))
+        self.timer_display.pack()
+        self.start_button = tk.Button(self.time, text="开始", command=self.start_timer)
+        self.start_button.pack()
+        self.stop_button = tk.Button(self.time, text="停止", command=self.stop_timer)
+        self.stop_button.pack()
+
+        # 倒计时部分
+        self.countdown_label = tk.Label(self.time, text="倒计时", font=('calibri', 20, 'bold'))
+        self.countdown_label.pack()
+        self.countdown_time = tk.IntVar()
+        self.countdown_time.set(0)
+        self.countdown_entry = tk.Entry(self.time, textvariable=self.countdown_time, font=('calibri', 20, 'bold'))
+        self.countdown_entry.pack()
+        self.add_button = tk.Button(self.time, text="  +  ", command=self.add_time)
+        self.add_button.pack(side='left')
+        self.subtract_button = tk.Button(self.time, text="  -  ", command=self.subtract_time)
+        self.subtract_button.pack(side='right')
+        self.start_countdown_button = tk.Button(self.time, text="开始倒计时", command=self.start_countdown)
+        self.start_countdown_button.pack()
+
+    def update_clock(self):
+        if self.clock_running:
+            current_time = time.strftime('%H:%M:%S')
+            self.clock_label.configure(text=current_time)
+        self.time.after(1000, self.update_clock)
+
+    def start_timer(self):
+        if not self.timer_running:
+            self.start_time = time.time()
+            self.timer_running = True
+            self.update_timer()
+
+    def stop_timer(self):
+        self.timer_running = False
+
+    def update_timer(self):
+        if self.timer_running:
+            elapsed_time = time.time() - self.start_time
+            hours, remainder = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            time_str = '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))
+            self.timer_text.set(time_str)
+            self.time.after(1000, self.update_timer)
+
+    def add_time(self):
+        current_time = self.countdown_time.get()
+        self.countdown_time.set(current_time + 1)
+
+    def subtract_time(self):
+        current_time = self.countdown_time.get()
+        if current_time > 0:
+            self.countdown_time.set(current_time - 1)
+
+    def start_countdown(self):
+        countdown_seconds = self.countdown_time.get()
+        if countdown_seconds > 0:
+            self.countdown_timer(countdown_seconds)
+        else:
+            messagebox.showerror("错误", "请输入一个大于0的数字")
+
+    def countdown_timer(self, seconds):
+        if seconds > 0:
+            self.countdown_time.set(seconds)
+            self.time.after(1000, self.countdown_timer, seconds - 1)
+        else:
+            messagebox.showinfo("提示", "倒计时结束")
+
 def save_as_png():
         now = datetime.now()
         current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -400,6 +485,10 @@ if __name__ == '__main__':
 
     # 创建抽奖按钮
     close_button = ttk.Button(root, text="抽奖", command=app.choujiang)
+    close_button.pack(side="left", padx=10, pady=10)
+
+    # 创建时间按钮
+    close_button = ttk.Button(root, text="计时器", command=app.time)
     close_button.pack(side="left", padx=10, pady=10)
 
     def minimize_window():
@@ -460,3 +549,20 @@ if __name__ == '__main__':
     menu_bar.add_command(label="关于软件", command=app.about)
 
     root.mainloop()
+
+# 后续完成的功能：
+# 1、优化书写时卡顿，
+# 2、增加抗锯齿，
+# 3、支持屏幕批注、
+# 4、支持PPT.dll，PPT批注，
+# 5、支持单指、多指书写，
+# 6、双指缩放，移动，
+# 7、图形识别，
+# 8、画几何图形，
+# 9、背景颜色改变，
+# 10、笔画选择、移动，克隆、旋转、删除，
+# 11、视频展台以及其批注等功能,支持导入图片等类型文件的功能
+# 12、保存独有后缀文件，并可以打开，一键生成所有页的PDF、Image,
+# 13、目录可以查看缩略图,
+# 14、重画icon，优化部分图标，重写readme，开源，使用github action编译，上传release，
+# 15、支持检测并更新的功能，优化界面布局。
