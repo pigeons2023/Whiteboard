@@ -31,18 +31,23 @@
 #        *                  不见满街漂亮妹，哪个归得程序员？
 #        *
 #
-import time
 from datetime import datetime
-import tkinter as tk
 from tkinter import Scale, ttk
-import os
-from tkinter import messagebox
 from tkinter import colorchooser
 from PIL import ImageGrab
 import webbrowser
 from tkinter import filedialog
 import csv
 import random
+import os
+import sys
+import time
+import atexit
+import msvcrt
+import tempfile
+import tkinter as tk
+from tkinter import messagebox
+
 # 图标Base64
 icon_data = '''
         iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABjSURBVDhP7Y5LCgAhDEN7/0uPZFEInX5S3A3zIKgxjdpP5Am6hkvWhfwTVS1SiBjzmzJHLvTXXaDySvgy20/eC1xykAUqryULql6KOpx5KdMwC/haMgYC60KcJ7Vswkrm+5gdXxRZp8nnFLkAAAAASUVORK5CYII=
@@ -50,7 +55,22 @@ icon_data = '''
 
 class AnnotationApp:
     def __init__(self, root):
+        # 创建一个临时文件作为进程锁
+        lock_file_path = os.path.join(tempfile.gettempdir(), 'my_program_lock')
+        lock_file = open(lock_file_path, 'w')
+
+        try:
+            # 尝试获取进程锁，若已经被其他实例获取，则显示启动失败信息框并退出
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        except IOError:
+            messagebox.showinfo("启动失败", "程序已经在运行中")
+            sys.exit()
+
+        # 当程序退出时删除临时文件并释放进程锁
+        atexit.register(lambda: os.remove(lock_file_path))
+        atexit.register(lambda: lock_file.close())
         self.root = root
+
         # 设置关闭时的状态阶段
         self.confirmation_stage = 0  # 确认阶段，0表示初始阶段
 
