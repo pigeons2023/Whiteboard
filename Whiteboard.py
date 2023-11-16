@@ -35,16 +35,16 @@ from datetime import datetime
 from tkinter import Scale, ttk
 from tkinter import colorchooser
 from PIL import ImageGrab
-import webbrowser
+from webbrowser import open as web_open
 from tkinter import filedialog
-import csv
+from csv import reader as csv_reader
 import random
 import os
-import sys
+from sys import exit as sys_exit
 import time
 import atexit
 import msvcrt
-import tempfile
+from tempfile import gettempdir
 import tkinter as tk
 from tkinter import messagebox
 
@@ -53,10 +53,13 @@ icon_data = '''
         iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABjSURBVDhP7Y5LCgAhDEN7/0uPZFEInX5S3A3zIKgxjdpP5Am6hkvWhfwTVS1SiBjzmzJHLvTXXaDySvgy20/eC1xykAUqryULql6KOpx5KdMwC/haMgYC60KcJ7Vswkrm+5gdXxRZp8nnFLkAAAAASUVORK5CYII=
     '''
 
+
+cdn_url = 'https://fg.pigeonserver.xyz/'
+version = '0.6'
 class AnnotationApp:
     def __init__(self, root):
         # 创建一个临时文件作为进程锁
-        lock_file_path = os.path.join(tempfile.gettempdir(), 'my_program_lock')
+        lock_file_path = os.path.join(gettempdir(), 'my_program_lock')
         lock_file = open(lock_file_path, 'w')
 
         try:
@@ -64,7 +67,7 @@ class AnnotationApp:
             msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
         except IOError:
             messagebox.showinfo("启动失败", "程序已经在运行中")
-            sys.exit()
+            sys_exit()
 
         # 当程序退出时删除临时文件并释放进程锁
         atexit.register(lambda: os.remove(lock_file_path))
@@ -280,7 +283,7 @@ class AnnotationApp:
 
     def open_website(self):
         url = "https://pigeonserver.xyz"  # 打开官网
-        webbrowser.open(url)
+        web_open(url)
 
     def choose_color(self):
         color = colorchooser.askcolor(title="Choose color")
@@ -353,7 +356,7 @@ class AnnotationApp:
         file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
         if file_path:
             with open(file_path, 'r', encoding='utf-8') as file:
-                reader = csv.reader(file)
+                reader = csv_reader(file)
                 next(reader)  # 跳过标题行
                 for row in reader:
                     name = row[0]
@@ -493,15 +496,8 @@ def save_as_png():
         # 保存图像
         ImageGrab.grab().save(file_path, "PNG")
     
-if __name__ == '__main__':
-    root = tk.Tk()
-    root.state('zoomed')
-    root.title('Whiteboard')
-    # root.attributes('-fullscreen', True)
-    root.wm_state('zoomed')
-    app = AnnotationApp(root)
-    icon_image = tk.PhotoImage(data=icon_data)
-    root.iconphoto(True, icon_image)
+
+def runner() -> int :
     # 添加一个菜单栏，用于选择颜色和橡皮的大小
     menu_bar = tk.Menu(root)
     root.config(menu=menu_bar)
@@ -571,6 +567,17 @@ if __name__ == '__main__':
     # 关于软件
     menu_bar.add_command(label="关于软件", command=app.about)
 
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.state('zoomed')
+    root.title('Whiteboard')
+    # root.attributes('-fullscreen', True)
+    root.wm_state('zoomed')
+    app = AnnotationApp(root)
+    icon_image = tk.PhotoImage(data=icon_data)
+    root.iconphoto(True, icon_image)
+    runner()
     root.mainloop()
 
 # 后续完成的功能：
