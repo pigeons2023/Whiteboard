@@ -497,7 +497,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.state('zoomed')
     root.title('Whiteboard')
-    root.attributes('-fullscreen', True)
+    # root.attributes('-fullscreen', True)
     root.wm_state('zoomed')
     app = AnnotationApp(root)
     icon_image = tk.PhotoImage(data=icon_data)
