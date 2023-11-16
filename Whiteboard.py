@@ -47,6 +47,8 @@ import msvcrt
 from tempfile import gettempdir
 import tkinter as tk
 from tkinter import messagebox
+import _thread
+from httpx import get as httpx_get
 
 # 图标Base64
 icon_data = '''
@@ -279,7 +281,7 @@ class AnnotationApp:
             self.save_page_content()
  
     def about(self):
-        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.6\n作者：Pigeons2023")
+        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.6\n作者：Pigeons2023 wuqi9277")
 
     def open_website(self):
         url = "https://pigeonserver.xyz"  # 打开官网
@@ -567,6 +569,18 @@ def runner() -> int :
     # 关于软件
     menu_bar.add_command(label="关于软件", command=app.about)
 
+
+def check_update() :
+    try:
+        data = httpx_get(url=cdn_url)
+        version_new = data.json()['version']
+        if version_new != version :
+            d_url = data.json()['download_url']
+            download = httpx_get(url=d_url)
+            with open("Whiteboard_New.exe","wb") as f :
+                f.write(download.content)
+        else : pass
+    except: pass
 
 if __name__ == '__main__':
     root = tk.Tk()
