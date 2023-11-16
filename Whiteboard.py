@@ -573,11 +573,24 @@ def runner() -> int :
 
 def check_update() :
     try:
+        if os.path.exists("Whiteboard_New.exe"):
+            try:
+                os.remove("Whiteboard_New.exe")
+            except: pass
         data = httpx_get(url=cdn_url)
         version_new = data.json()['version']
         if version_new != version :
             choose = eg.buttonbox("检测到新版本，是否更新？",title='',choices=('NO','YES'))
             print("new version found")
+            if os.path.exists("updata.vbs"):
+                    try:
+                        os.remove("updata.vbs")
+                    except: pass
+            if not os.path.exists("updata.vbs"):
+                try:
+                    with open("updata.vbs",'w',encoding='utf-8') as f:
+                        f.write("0")
+                except: pass
             if choose == 'YES':
                 print("user allowed download")
                 d_url = data.json()['download_url']
