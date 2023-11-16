@@ -49,6 +49,7 @@ import tkinter as tk
 from tkinter import messagebox
 import _thread
 from httpx import get as httpx_get
+import easygui as eg
 
 # 图标Base64
 icon_data = '''
@@ -551,14 +552,14 @@ def runner() -> int :
     # 橡皮擦子菜单
     menu_bar.add_command(label="使用橡皮", command=app.use_eraser)
 
-    # 清空画布子菜单
-    menu_bar.add_command(label="重载白板", command=app.clear_canvas)
+    # # 清空画布子菜单
+    # menu_bar.add_command(label="重载白板", command=app.clear_canvas)
 
-    # 保存当前页子菜单
-    menu_bar.add_command(label="保存当前页面", command=app.save_current_page)
+    # # 保存当前页子菜单
+    # menu_bar.add_command(label="保存当前页面", command=app.save_current_page)
 
-    # 保存所有页子菜单
-    menu_bar.add_command(label="保存所有页面", command=app.save_all_pages)
+    # # 保存所有页子菜单
+    # menu_bar.add_command(label="保存所有页面", command=app.save_all_pages)
 
     # 保存图片
     menu_bar.add_command(label="保存图片", command=lambda: save_as_png())
@@ -575,14 +576,25 @@ def check_update() :
         data = httpx_get(url=cdn_url)
         version_new = data.json()['version']
         if version_new != version :
-            d_url = data.json()['download_url']
-            download = httpx_get(url=d_url)
-            with open("Whiteboard_New.exe","wb") as f :
-                f.write(download.content)
-        else : pass
+            choose = eg.buttonbox("检测到新版本，是否更新？",title='',choices=('NO','YES'))
+            print("new version found")
+            if choose == 'YES':
+                print("user allowed download")
+                d_url = data.json()['download_url']
+                download = httpx_get(url=d_url)
+                with open("Whiteboard_New.exe","wb") as f :
+                    f.write(download.content)
+            else:
+                print("cancel")
+        else:
+            print("no new version")
     except: pass
+    return 0
 
 if __name__ == '__main__':
+    try:
+        _thread.start_new_thread(check_update,())
+    except: pass
     root = tk.Tk()
     root.state('zoomed')
     root.title('Whiteboard')
