@@ -54,7 +54,7 @@ icon_data = '''
     '''
 
 
-cdn_url = 'https://fg.pigeonserver.xyz/'
+cdn_url = 'https://fg.pigeonserver.xyz/https://raw.githubusercontent.com/pigeons2023/Whiteboard/main/v.json'
 version = '0.6'
 class AnnotationApp:
     def __init__(self, root):
