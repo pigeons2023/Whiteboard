@@ -161,7 +161,6 @@ cython_debug/
 
 # others
 test*.py
-Whiteboard*.exe
-Whiteboard.exe
+*.exe
 *.vbs
 .vscode/
