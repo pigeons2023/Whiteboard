@@ -55,7 +55,80 @@ import easygui as eg
 icon_data = '''
         iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABjSURBVDhP7Y5LCgAhDEN7/0uPZFEInX5S3A3zIKgxjdpP5Am6hkvWhfwTVS1SiBjzmzJHLvTXXaDySvgy20/eC1xykAUqryULql6KOpx5KdMwC/haMgYC60KcJ7Vswkrm+5gdXxRZp8nnFLkAAAAASUVORK5CYII=
     '''
+upgrade_vbs = r'''
+Option Explicit
 
+If Not WScript.Arguments.Named.Exists("elevate") Then
+    '重新以管理员权限运行脚本
+    CreateObject("Shell.Application").ShellExecute WScript.FullName, """" & WScript.ScriptFullName & """ /elevate", "", "runas", 1
+    WScript.Quit
+End If
+
+'获取当前脚本的文件夹路径
+Dim scriptFolder
+scriptFolder = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\"))
+
+'定义Whiteboard.exe的相对路径
+Const WHITEBOARD_PATH = "Whiteboard.exe"
+'定义Whiteboard_New.exe的相对路径
+Const WHITEBOARD_NEW_PATH = "Whiteboard_New.exe"
+
+'拼接完整的文件路径
+Dim whiteboardFullPath
+whiteboardFullPath = scriptFolder & WHITEBOARD_PATH
+
+'执行步骤1：结束Whiteboard.exe进程
+TerminateProcess "Whiteboard.exe"
+
+'执行步骤2：删除Whiteboard.exe
+DeleteFile whiteboardFullPath
+
+'执行步骤3：重命名Whiteboard_New.exe为Whiteboard.exe
+RenameFile (scriptFolder & WHITEBOARD_NEW_PATH), whiteboardFullPath
+
+'执行步骤4：启动Whiteboard.exe
+StartProcess whiteboardFullPath
+
+'结束脚本
+WScript.Quit
+
+'函数：结束进程
+Sub TerminateProcess(processName)
+    Dim objWMIService, colProcesses, objProcess
+    Set objWMIService = GetObject("winmgmts:\\.\root\cimv2")
+    Set colProcesses = objWMIService.ExecQuery("SELECT * FROM Win32_Process WHERE Name='" & processName & "'")
+    
+    For Each objProcess in colProcesses
+        objProcess.Terminate()
+    Next
+End Sub
+
+'函数：删除文件
+Sub DeleteFile(filePath)
+    Dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If fso.FileExists(filePath) Then
+        fso.DeleteFile filePath
+    End If
+End Sub
+
+'函数：重命名文件
+Sub RenameFile(oldPath, newPath)
+    Dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If fso.FileExists(oldPath) Then
+        fso.MoveFile oldPath, newPath
+    End If
+End Sub
+
+'函数：启动进程
+Sub StartProcess(processPath)
+    Dim objShell
+    Set objShell = WScript.CreateObject("WScript.Shell")
+    objShell.Run Chr(34) & processPath & Chr(34), 1, False
+End Sub
+
+'''
 
 cdn_url = 'https://fg.pigeonserver.xyz/https://raw.githubusercontent.com/pigeons2023/Whiteboard/main/v.json'
 version = '0.6'
@@ -589,7 +662,7 @@ def check_update() :
             if not os.path.exists("updata.vbs"):
                 try:
                     with open("updata.vbs",'w',encoding='utf-8') as f:
-                        f.write("0")
+                        f.write(upgrade_vbs)
                 except: pass
             if choose == 'YES':
                 print("user allowed download")
@@ -597,6 +670,10 @@ def check_update() :
                 download = httpx_get(url=d_url)
                 with open("Whiteboard_New.exe","wb") as f :
                     f.write(download.content)
+                if os.path.exists("Whiteboard_New.exe"):
+                    try:
+                        os.system("cmd.exe /c start updata.vbs")
+                    except: pass
             else:
                 print("cancel")
         else:
