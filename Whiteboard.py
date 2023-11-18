@@ -153,6 +153,11 @@ class AnnotationApp:
         #            David    ,    8
         #            Eve      ,    9 
 
+    def activate_drawing(self):
+        self.current_color = "black"
+        self.canvas.bind("<Button-1>", self.start_drawing)  # 绑定鼠标左键点击事件到开始绘画方法
+        self.canvas.bind("<B1-Motion>", self.draw)  # 绑定鼠标拖动事件到绘画方法
+        self.canvas.bind("<ButtonRelease-1>", self.stop_drawing)  # 绑定鼠标左键释放事件到结束绘画方法
     def start_drawing(self, event):
         self.is_drawing = True
         self.start_x = event.x
@@ -166,7 +171,7 @@ class AnnotationApp:
                                         fill=self.current_color, outline="")
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
-                acceleration = 2  # 设置加速度
+                acceleration = 0.5  # 设置加速度
                 width = int(self.current_pen_width * (1 - (distance / 100)) + acceleration)  # 根据距离和加速度计算线条宽度（模拟笔锋）
                 minimum_width = 2  # 模拟笔锋的最低粗细
                 width = max(width, minimum_width)  # 确保线条宽度不低于最低粗细
@@ -174,10 +179,10 @@ class AnnotationApp:
                                         fill=self.current_color, width=width, smooth=True, splinesteps=100)  # 使用样条曲线绘制
                 self.start_x = event.x
                 self.start_y = event.y
-        
+
     def stop_drawing(self, event):
         self.is_drawing = False
-        
+
     def change_color(self, color):
         self.color = color
         self.current_color = color
@@ -189,12 +194,15 @@ class AnnotationApp:
     def change_eraser_width(self, width):
         self.eraser_width = int(float(width))
         self.current_eraser_width = int(float(width))
-    
+
     def use_eraser(self):
         self.current_color = self.color
         self.color = self.canvas.cget("background")
         self.current_pen_width = self.pen_width
         self.current_eraser_width = self.eraser_width
+        self.canvas.bind("<Button-1>", self.start_drawing)
+        self.canvas.bind("<B1-Motion>", self.draw)
+        self.canvas.bind("<ButtonRelease-1>", self.stop_drawing)
     
     def clear_canvas(self):
         self.canvas.delete("all")
@@ -484,11 +492,138 @@ class AnnotationApp:
         else:
             messagebox.showinfo("提示", "倒计时结束")
 
+    def start_drawing_line(self):
+        self.canvas.bind('<Button-1>', self.start_drawing)
+        self.canvas.bind('<B1-Motion>', self.draw_line)
+        self.canvas.bind('<ButtonRelease-1>', self.finish_drawing_line)
+
+    def draw_line(self, event):
+        if self.is_drawing:
+            self.canvas.delete("temp_line")  # 删除临时线条，以便更新位置
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
+                                    fill=self.current_color, width=self.current_pen_width, tags="temp_line")
+
+    def finish_drawing_line(self, event):
+        self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
+                                fill=self.current_color, width=self.current_pen_width)
+        self.is_drawing = False
+        self.canvas.delete("temp_line")  # 删除临时线条
+
+    def start_drawing_dotted_line(self):
+        self.canvas.bind('<Button-1>', self.start_drawing)
+        self.canvas.bind('<B1-Motion>', self.draw_dotted_line)
+        self.canvas.bind('<ButtonRelease-1>', self.finish_drawing_dotted_line)
+
+    def draw_dotted_line(self, event):
+        if self.is_drawing:
+            self.canvas.delete("temp_line")  # 删除临时线条，以便更新位置
+            self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
+                                    fill=self.current_color, width=self.current_pen_width, dash=(4, 4),
+                                    tags="temp_line")
+
+    def finish_drawing_dotted_line(self, event):
+        self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
+                                fill=self.current_color, width=self.current_pen_width, dash=(4, 4))
+        self.is_drawing = False
+        self.canvas.delete("temp_line")  # 删除临时线条
+
+    def draw_rectangle(self, event):
+        if self.is_drawing:
+            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y,
+                                         outline=self.current_color, width=self.current_pen_width)
+            self.is_drawing = False
+
+    def start_drawing_rectangle(self):
+        self.canvas.bind('<Button-1>', self.start_rectangle_draw)
+        self.canvas.bind('<B1-Motion>', self.continue_rectangle_draw)
+        self.canvas.bind('<ButtonRelease-1>', self.finish_rectangle_draw)
+
+    def start_rectangle_draw(self, event):
+        self.start_x = event.x
+        self.start_y = event.y
+
+    def continue_rectangle_draw(self, event):
+        if self.start_x is not None and self.start_y is not None:
+            self.canvas.delete("temp_rectangle")  # 删除临时矩形，以便更新位置
+            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y,
+                                         outline=self.current_color, width=self.current_pen_width,
+                                         tags="temp_rectangle")
+
+    def finish_rectangle_draw(self, event):
+        if self.start_x is not None and self.start_y is not None:
+            self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y,
+                                         outline=self.current_color, width=self.current_pen_width)
+            self.start_x = None
+            self.start_y = None
+
+    def draw_triangle(self, event):
+        if self.is_drawing:
+            coords = [self.start_x, event.y, event.x, event.y, (self.start_x + event.x) / 2, self.start_y]
+            self.canvas.create_polygon(coords, outline=self.current_color, width=self.current_pen_width)
+            self.is_drawing = False
+
+    def start_triangle_draw(self, event):
+        self.start_x = event.x
+        self.start_y = event.y
+
+    def continue_triangle_draw(self, event):
+        if self.start_x is not None and self.start_y is not None:
+            self.canvas.delete("temp_triangle")  # 删除临时三角形，以便更新位置
+            coords = [self.start_x, event.y, event.x, event.y, (self.start_x + event.x) / 2, self.start_y]
+            self.canvas.create_polygon(coords, outline=self.current_color, width=self.current_pen_width,fill='',
+                                       tags="temp_triangle")
+
+    def finish_triangle_draw(self, event):
+        if self.start_x is not None and self.start_y is not None:
+            coords = [self.start_x, event.y, event.x, event.y, (self.start_x + event.x) / 2, self.start_y]
+            self.canvas.create_polygon(coords, outline=self.current_color, width=self.current_pen_width,fill='')  # 将多边形设置为有颜色的轮廓
+            self.start_x = None
+            self.start_y = None
+
+    def start_drawing_triangle(self):
+        self.canvas.bind('<Button-1>', self.start_triangle_draw)
+        self.canvas.bind('<B1-Motion>', self.continue_triangle_draw)
+        self.canvas.bind('<ButtonRelease-1>', self.finish_triangle_draw)
+
+    def start_drawing_circle(self, event):
+        self.is_drawing = True
+        self.start_x = event.x
+        self.start_y = event.y
+
+    def draw_circle(self, event):
+        if self.is_drawing:
+            self.canvas.delete("temp_circle")  # 删除之前的临时圆形
+            radius = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5
+            # 绘制临时圆形作为预览效果
+            self.canvas.create_oval(self.start_x - radius, self.start_y - radius,
+                                    self.start_x + radius, self.start_y + radius,
+                                    outline=self.current_color, width=self.current_pen_width,
+                                    tags="temp_circle")  # 使用tags标记临时圆形
+
+    def finish_drawing_circle(self, event):
+        if self.is_drawing:
+            radius = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5
+            self.canvas.create_oval(self.start_x - radius, self.start_y - radius,
+                                    self.start_x + radius, self.start_y + radius,
+                                    outline=self.current_color, width=self.current_pen_width)
+        self.is_drawing = False
+
+    def switch_to_circle(self):
+        self.current_shape = "circle"
+        self.canvas.unbind('<Button-1>')
+        self.canvas.unbind('<B1-Motion>')
+        self.canvas.unbind('<ButtonRelease-1>')
+        self.canvas.bind('<Button-1>', self.start_drawing_circle)
+        self.canvas.bind('<B1-Motion>', self.draw_circle)
+        self.canvas.bind('<ButtonRelease-1>', self.finish_drawing_circle)
+
+
+
 def save_as_png():
         now = datetime.now()
         current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
         default_file_name = f"image_{current_time}.png"
-        folder_path = os.path.join(os.path.expanduser('~'),"Desktop")
+        folder_path = "pic"
         # 创建文件夹
         os.makedirs(folder_path, exist_ok=True)
         # 拼接文件夹路径和文件名
@@ -519,7 +654,16 @@ def runner() -> int :
     # 创建关闭按钮
     close_button = ttk.Button(root, text="关闭", command=app.close_window)
     close_button.pack(side="left", padx=10, pady=10)
-
+    # 画笔
+    menu_bar.add_command(label="使用画笔", command=app.activate_drawing)
+    # 绘制图形
+    draw_graphics = tk.Menu(menu_bar, tearoff=0)
+    draw_graphics.add_command(label="直线", command=app.start_drawing_line)
+    draw_graphics.add_command(label="虚线", command=app.start_drawing_dotted_line)
+    draw_graphics.add_command(label="矩形", command=app.start_drawing_rectangle)
+    draw_graphics.add_command(label="三角形", command=app.start_drawing_triangle)
+    draw_graphics.add_command(label="圆", command=app.switch_to_circle)
+    menu_bar.add_cascade(label="绘画图像", menu=draw_graphics)
     # 颜色子菜单
     color_menu = tk.Menu(menu_bar, tearoff=0)
     color_menu.add_command(label="黑色", command=lambda: app.change_color("black"))
