@@ -623,7 +623,7 @@ def save_as_png():
         now = datetime.now()
         current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
         default_file_name = f"image_{current_time}.png"
-        folder_path = "pic"
+        folder_path = os.path.join(os.path.expanduser('~'),"Desktop")
         # 创建文件夹
         os.makedirs(folder_path, exist_ok=True)
         # 拼接文件夹路径和文件名
