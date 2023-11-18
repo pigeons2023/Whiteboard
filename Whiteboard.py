@@ -94,7 +94,7 @@ class AnnotationApp:
         self.current_eraser_width = 10  # 当前的橡皮宽度
         
         # 定义初始笔的颜色
-        self.color = "black"  # 默认笔的颜色为黑色
+        # self.color = "black"  # 默认笔的颜色为黑色
         self.current_color = "black"  # 当前的颜色值
 
         # 定义Canvas的状态
@@ -134,7 +134,8 @@ class AnnotationApp:
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
 
-        # 橡皮的大小调节控件
+        # 橡皮的调节控件
+        self.iferaser = False #是否使用橡皮
         self.eraser_label = ttk.Label(root, text="橡皮大小:")
         self.eraser_label.pack(side="left", padx=10, pady=10)
         self.eraser_width_scale = Scale(root, from_=0, to=50, orient=tk.HORIZONTAL,tickinterval=5, command=self.change_eraser_width,length=250,showvalue=True)
@@ -154,7 +155,8 @@ class AnnotationApp:
         #            Eve      ,    9 
 
     def activate_drawing(self):
-        self.current_color = "black"
+        self.iferaser = False
+        # self.current_color = "black"
         self.canvas.bind("<Button-1>", self.start_drawing)  # 绑定鼠标左键点击事件到开始绘画方法
         self.canvas.bind("<B1-Motion>", self.draw)  # 绑定鼠标拖动事件到绘画方法
         self.canvas.bind("<ButtonRelease-1>", self.stop_drawing)  # 绑定鼠标左键释放事件到结束绘画方法
@@ -165,10 +167,10 @@ class AnnotationApp:
     
     def draw(self, event):
         if self.is_drawing:
-            if self.current_color == self.canvas.cget("background"):  # 使用橡皮擦
+            if self.iferaser == True:  # 使用橡皮擦
                 self.canvas.create_oval(event.x - self.current_eraser_width, event.y - self.current_eraser_width,
                                         event.x + self.current_eraser_width, event.y + self.current_eraser_width,
-                                        fill=self.current_color, outline="")
+                                        fill=self.canvas.cget("background"), outline="")
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
                 acceleration = 0.5  # 设置加速度
@@ -184,7 +186,7 @@ class AnnotationApp:
         self.is_drawing = False
 
     def change_color(self, color):
-        self.color = color
+        # self.color = color
         self.current_color = color
     
     def change_pen_width(self, width):
@@ -196,8 +198,9 @@ class AnnotationApp:
         self.current_eraser_width = int(float(width))
 
     def use_eraser(self):
-        self.current_color = self.color
-        self.color = self.canvas.cget("background")
+        # self.current_color = self.color
+        # self.color = self.canvas.cget("background")
+        self.iferaser = True
         self.current_pen_width = self.pen_width
         self.current_eraser_width = self.eraser_width
         self.canvas.bind("<Button-1>", self.start_drawing)
@@ -297,7 +300,7 @@ class AnnotationApp:
         color = colorchooser.askcolor(title="Choose color")
         if color[1] is not None:
             self.current_color = color[1]
-            self.color = color[1]
+            # self.color = color[1]
 
     def close_window(self, event=None):
         if self.confirmation_stage == 0:
