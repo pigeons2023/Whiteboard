@@ -376,8 +376,10 @@ class AnnotationApp:
             self.result_label.config(text="成功导入参与者名单")
 
     def draw_winners(self):
+        # 在以后实现多抽，目前抽一个
         if self.participants:
-            num_winners = int(self.num_winners_entry.get())
+            # num_winners = int(self.num_winners_entry.get())
+            num_winners = int(1)
             total_weight = sum([weight for _, weight in self.participants])
             if num_winners <= len(self.participants):
                 winners = random.choices(self.participants, [weight/total_weight for _, weight in self.participants], k=num_winners)
