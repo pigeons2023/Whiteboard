@@ -82,7 +82,7 @@ class AnnotationApp:
         self.screen_height = root.winfo_screenheight()  
 
         # 定义生成画布Canvas
-        self.canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105, bg='white')  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
+        self.canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
@@ -164,7 +164,7 @@ class AnnotationApp:
         self.is_drawing = True
         self.start_x = event.x
         self.start_y = event.y
-    
+
     def draw(self, event):
         if self.is_drawing:
             if self.iferaser == True:  # 使用橡皮擦
@@ -173,12 +173,16 @@ class AnnotationApp:
                                         fill=self.canvas.cget("background"), outline="")
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
-                acceleration = 0.5  # 设置加速度
-                width = int(self.current_pen_width * (1 - (distance / 100)) + acceleration)  # 根据距离和加速度计算线条宽度（模拟笔锋）
-                minimum_width = 2  # 模拟笔锋的最低粗细
+                acceleration = 0.6  # 设置加速度
+                width = int(self.current_pen_width * (1 - distance / 80) + acceleration)  # 根据距离和加速度计算线条宽度（模拟笔锋）
+                if width < 7:
+                    minimum_width = int(self.current_pen_width * 0.4)
+                else:
+                    minimum_width = int(self.current_pen_width * 0.2)
                 width = max(width, minimum_width)  # 确保线条宽度不低于最低粗细
-                self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
-                                        fill=self.current_color, width=width, smooth=True, splinesteps=100)  # 使用样条曲线绘制
+                cx = (self.start_x + event.x) / 2  # 计算控制点x坐标
+                cy = (self.start_y + event.y) / 2  # 计算控制点y坐标
+                self.canvas.create_line(self.start_x, self.start_y, cx, cy, event.x, event.y,fill=self.current_color, width=width, smooth=True,splinesteps=500, joinstyle=tk.ROUND)  # 使用二次贝塞尔曲线绘制
                 self.start_x = event.x
                 self.start_y = event.y
 
