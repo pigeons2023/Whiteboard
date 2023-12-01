@@ -47,7 +47,7 @@ import msvcrt
 from tempfile import gettempdir
 import tkinter as tk
 from tkinter import messagebox
-import _thread
+import threading
 # from httpx import get as httpx_get
 # import easygui as eg
 
@@ -762,7 +762,7 @@ def check_updata():
 
 if __name__ == '__main__':
     try:
-        _thread.start_new_thread(check_updata,())
+        threading.Thread(target=check_updata,args=()).start()
     except: pass
     root = tk.Tk()
     root.state('zoomed')
