@@ -267,14 +267,20 @@ class AnnotationApp:
             self.directory.append(f"第 {i+1} 页")
         
     def redraw_canvas(self):
+        item : list
         self.canvas.delete("all")
         for item in self.pages[self.page_number-1]:
-            if item[4] == self.canvas.cget("background"):  # 使用橡皮擦
-                self.canvas.create_oval(item[0]-item[5], item[1]-item[5],
-                                         item[2]+item[5], item[3]+item[5],
-                                         fill=item[4], outline="")
+            # if len(item) == 8 :
+            #     item.pop(2)
+            #     item.pop(3)
+            if item[-2] == self.canvas.cget("background"):  # 使用橡皮擦
+                # print(item)
+                self.canvas.create_line(item[0], item[1], item[2], item[3]
+                                         ,fill=self.canvas.cget("background"), width=item[5])
             else:  # 使用笔
-                self.canvas.create_line(item[0], item[1], item[2], item[3], fill=item[4], width=item[5])
+                # print(item)
+                self.canvas.create_line(item[0], item[1], item[2], item[3], item[4] ,item[5]
+                                        ,fill=item[6], width=item[7])
     
     def save_page_content(self):
         content = []
