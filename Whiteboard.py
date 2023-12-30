@@ -82,7 +82,7 @@ class AnnotationApp:
         self.screen_height = root.winfo_screenheight()  
 
         # 定义生成画布Canvas
-        self.canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
+        self.canvas = tk.Canvas(root, width=600, height=600, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
@@ -182,7 +182,7 @@ class AnnotationApp:
                 width = max(width, minimum_width)  # 确保线条宽度不低于最低粗细
                 cx = (self.start_x + event.x) / 2  # 计算控制点x坐标
                 cy = (self.start_y + event.y) / 2  # 计算控制点y坐标
-                self.canvas.create_line(self.start_x, self.start_y, cx, cy, event.x, event.y,fill=self.current_color, width=width, smooth=True,splinesteps=500, joinstyle=tk.ROUND)  # 使用二次贝塞尔曲线绘制
+                self.canvas.create_line(self.start_x, self.start_y, cx, cy, event.x, event.y,fill=self.current_color, width=width, smooth=True,splinesteps=500, joinstyle=tk.ROUND,tags='pen')  # 使用二次贝塞尔曲线绘制
                 self.start_x = event.x
                 self.start_y = event.y
 
@@ -273,22 +273,48 @@ class AnnotationApp:
             # if len(item) == 8 :
             #     item.pop(2)
             #     item.pop(3)
-            if item[-2] == self.canvas.cget("background"):  # 使用橡皮擦
-                # print(item)
+            # print(item)
+            if item[-2] == self.canvas.cget("background") and item[-1] == 'pen':  # 使用橡皮擦
+                print(item)
                 self.canvas.create_line(item[0], item[1], item[2], item[3]
-                                         ,fill=self.canvas.cget("background"), width=item[5])
-            else:  # 使用笔
-                # print(item)
+                                         ,fill=self.canvas.cget("background"), width=item[5],tags='pen')
+            if item[-1] == 'pen':  
+                print(item)
                 self.canvas.create_line(item[0], item[1], item[2], item[3], item[4] ,item[5]
-                                        ,fill=item[6], width=item[7])
+                                        ,fill=item[6], width=item[7],tags='pen')
+            if item[-1] == 'line':
+                self.canvas.create_line(item[0], item[1], item[2], item[3],
+                                        fill=item[4], width=item[5],tags='line')
+            if item[-2] == 'dotted':
+                self.canvas.create_line(item[0], item[1], item[2], item[3],
+                                        fill=item[4], width=item[5],dash=item[-1],tags='dotted')
+            if item[-1] == 'rectangle':
+                self.canvas.create_rectangle(item[0],item[1],item[2],item[3],outline=item[4],width=item[5],tags='rectangle')
+            if item[-1] == 'triangle':
+                # print(len(item))
+                self.canvas.create_polygon(item[0],item[1],item[2],item[3],item[4],item[5],outline=item[6],width=item[7],fill=item[8],tags='triangle')
+            if item[-1] == 'circle':
+                self.canvas.create_oval(item[0],item[1],item[2],item[3],outline=item[4],width=item[5],tags='circle')
+
     
     def save_page_content(self):
         content = []
         for item in self.canvas.find_all():
-            if self.canvas.itemcget(item, "fill") == self.canvas.cget("background"):  # 使用橡皮擦
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.eraser_width])
-            else:  # 使用笔
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.pen_width])
+            if self.canvas.itemcget(item,'tags') == 'pen' and self.canvas.itemcget(item, "fill") == self.canvas.cget("background"):  # 使用橡皮擦
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'pen':  # 使用笔
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'dotted':
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags'), self.canvas.itemcget(item,'dash')])
+            if self.canvas.itemcget(item,'tags') == 'line':  # 使用直线
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'rectangle':
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'triangle':
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'fill') ,self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'circle':
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])    
+
         self.pages[self.page_number-1] = content
     
     def save_current_page(self):
@@ -520,7 +546,7 @@ class AnnotationApp:
 
     def finish_drawing_line(self, event):
         self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
-                                fill=self.current_color, width=self.current_pen_width)
+                                fill=self.current_color, width=self.current_pen_width,tags='line')
         self.is_drawing = False
         self.canvas.delete("temp_line")  # 删除临时线条
 
@@ -538,7 +564,7 @@ class AnnotationApp:
 
     def finish_drawing_dotted_line(self, event):
         self.canvas.create_line(self.start_x, self.start_y, event.x, event.y,
-                                fill=self.current_color, width=self.current_pen_width, dash=(4, 4))
+                                fill=self.current_color, width=self.current_pen_width, dash=(4, 4),tags='dotted')
         self.is_drawing = False
         self.canvas.delete("temp_line")  # 删除临时线条
 
@@ -567,7 +593,7 @@ class AnnotationApp:
     def finish_rectangle_draw(self, event):
         if self.start_x is not None and self.start_y is not None:
             self.canvas.create_rectangle(self.start_x, self.start_y, event.x, event.y,
-                                         outline=self.current_color, width=self.current_pen_width)
+                                         outline=self.current_color, width=self.current_pen_width,tags='rectangle')
             self.start_x = None
             self.start_y = None
 
@@ -591,7 +617,7 @@ class AnnotationApp:
     def finish_triangle_draw(self, event):
         if self.start_x is not None and self.start_y is not None:
             coords = [self.start_x, event.y, event.x, event.y, (self.start_x + event.x) / 2, self.start_y]
-            self.canvas.create_polygon(coords, outline=self.current_color, width=self.current_pen_width,fill='')  # 将多边形设置为有颜色的轮廓
+            self.canvas.create_polygon(coords, outline=self.current_color, width=self.current_pen_width,fill='',tags='triangle')  # 将多边形设置为有颜色的轮廓
             self.start_x = None
             self.start_y = None
 
@@ -620,7 +646,7 @@ class AnnotationApp:
             radius = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5
             self.canvas.create_oval(self.start_x - radius, self.start_y - radius,
                                     self.start_x + radius, self.start_y + radius,
-                                    outline=self.current_color, width=self.current_pen_width)
+                                    outline=self.current_color, width=self.current_pen_width,tags='circle')
         self.is_drawing = False
 
     def switch_to_circle(self):
