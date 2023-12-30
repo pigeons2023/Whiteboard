@@ -82,7 +82,7 @@ class AnnotationApp:
         self.screen_height = root.winfo_screenheight()  
 
         # 定义生成画布Canvas
-        self.canvas = tk.Canvas(root, width=600, height=600, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
+        self.canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
@@ -128,19 +128,27 @@ class AnnotationApp:
         self.add_page_button.pack(side="left", padx=10, pady=10)
 
         # 笔的大小调节控件
-        self.pen_label = ttk.Label(root, text="笔的粗细:")
+        self.pen_label = ttk.Label(self.root, text="笔的粗细:")
         self.pen_label.pack(side="left", padx=10, pady=10)
-        self.pen_width_scale = Scale(root, from_=0, to=15, orient=tk.HORIZONTAL,tickinterval=1, command=self.change_pen_width, length=300,showvalue=True)
+        self.pen_width_var = tk.DoubleVar()
+        self.pen_width_scale = ttk.Scale(self.root, from_=0, to=15, orient=tk.HORIZONTAL, variable=self.pen_width_var, command=self.change_pen_width, length=275)
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
 
+        self.pen_width_value_label = ttk.Label(self.root, text="%.1f" % self.pen_width_var.get())
+        self.pen_width_value_label.pack(side="left", padx=10, pady=10)
+
         # 橡皮的调节控件
-        self.iferaser = False #是否使用橡皮
-        self.eraser_label = ttk.Label(root, text="橡皮大小:")
+        self.iferaser = False  # 是否使用橡皮
+        self.eraser_label = ttk.Label(self.root, text="橡皮大小:")
         self.eraser_label.pack(side="left", padx=10, pady=10)
-        self.eraser_width_scale = Scale(root, from_=0, to=50, orient=tk.HORIZONTAL,tickinterval=5, command=self.change_eraser_width,length=250,showvalue=True)
+        self.eraser_width_var = tk.DoubleVar()
+        self.eraser_width_scale = ttk.Scale(self.root, from_=0, to=50, orient=tk.HORIZONTAL, variable=self.eraser_width_var, command=self.change_eraser_width, length=225)
         self.eraser_width_scale.set(self.eraser_width)
         self.eraser_width_scale.pack(side="left", padx=10, pady=10)
+
+        self.eraser_width_value_label = ttk.Label(self.root, text="%.1f" % self.eraser_width_var.get())
+        self.eraser_width_value_label.pack(side="left", padx=10, pady=10)
 
         # 定义窗口关闭事件处理函数
         root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -196,10 +204,14 @@ class AnnotationApp:
     def change_pen_width(self, width):
         self.pen_width = int(float(width))
         self.current_pen_width = int(float(width))
+        # 更新笔的粗细数值标签
+        self.pen_width_value_label.config(text="%.1f" % self.pen_width_var.get())
     
     def change_eraser_width(self, width):
         self.eraser_width = int(float(width))
         self.current_eraser_width = int(float(width))
+        # 更新橡皮大小数值标签
+        self.eraser_width_value_label.config(text="%.1f" % self.eraser_width_var.get())
 
     def use_eraser(self):
         # self.current_color = self.color
@@ -326,14 +338,14 @@ class AnnotationApp:
             self.save_page_content()
  
     def about(self):
-        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.6\n作者：Pigeons2023 wuqi9277")
+        messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.7\n作者：Pigeons2023 wuqi9277")
 
     def open_website(self):
-        url = "https://pigeonserver.xyz"  # 打开官网
+        url = "https://app.pigeonserver.xyz"  # 打开官网
         web_open(url)
 
     def choose_color(self):
-        color = colorchooser.askcolor(title="Choose color")
+        color = colorchooser.askcolor(title="选择颜色")
         if color[1] is not None:
             self.current_color = color[1]
             # self.color = color[1]
@@ -671,33 +683,23 @@ def save_as_png():
         file_path = os.path.join(folder_path, default_file_name)
         # 保存图像
         ImageGrab.grab().save(file_path, "PNG")
-    
 
-def runner() -> int :
-    # 添加一个菜单栏，用于选择颜色和橡皮的大小
+def runner() -> int:
+    # 创建菜单栏
     menu_bar = tk.Menu(root)
     root.config(menu=menu_bar)
 
-    # 创建抽奖按钮
-    close_button = ttk.Button(root, text="抽奖", command=app.choujiang)
-    close_button.pack(side="left", padx=10, pady=10)
-
-    # 创建时间按钮
-    close_button = ttk.Button(root, text="计时器", command=app.time)
-    close_button.pack(side="left", padx=10, pady=10)
-
     def minimize_window():
-        root.iconify()
-    # 创建最小化按钮
-    minimize_button = ttk.Button(root, text="最小化", command=minimize_window)
-    minimize_button.pack(side="left", padx=10, pady=10)
 
-    # 创建关闭按钮
-    close_button = ttk.Button(root, text="关闭", command=app.close_window)
-    close_button.pack(side="left", padx=10, pady=10)
-    # 画笔
+        root.iconify()
+
+    # 创建画笔按钮并添加到菜单栏中
     menu_bar.add_command(label="使用画笔", command=app.activate_drawing)
-    # 绘制图形
+
+    # 创建橡皮擦按钮并添加到菜单栏中
+    menu_bar.add_command(label="使用橡皮", command=app.use_eraser)
+
+    # 创建绘制图形子菜单
     draw_graphics = tk.Menu(menu_bar, tearoff=0)
     draw_graphics.add_command(label="直线", command=app.start_drawing_line)
     draw_graphics.add_command(label="虚线", command=app.start_drawing_dotted_line)
@@ -705,17 +707,17 @@ def runner() -> int :
     draw_graphics.add_command(label="三角形", command=app.start_drawing_triangle)
     draw_graphics.add_command(label="圆", command=app.switch_to_circle)
     menu_bar.add_cascade(label="绘画图像", menu=draw_graphics)
-    # 颜色子菜单
+
+    # 创建颜色子菜单
     color_menu = tk.Menu(menu_bar, tearoff=0)
     color_menu.add_command(label="黑色", command=lambda: app.change_color("black"))
     color_menu.add_command(label="红色", command=lambda: app.change_color("red"))
     color_menu.add_command(label="绿色", command=lambda: app.change_color("green"))
     color_menu.add_command(label="蓝色", command=lambda: app.change_color("blue"))
-    # 新增更多颜色选项
     color_menu.add_command(label="自定义颜色", command=app.choose_color)
     menu_bar.add_cascade(label="颜色", menu=color_menu)
 
-    # 笔的大小调节子菜单
+    # 创建笔的大小调节子菜单
     pen_width_menu = tk.Menu(menu_bar, tearoff=0)
     pen_width_menu.add_command(label="3px", command=lambda: app.change_pen_width(3))
     pen_width_menu.add_command(label="5px", command=lambda: app.change_pen_width(5))
@@ -723,7 +725,7 @@ def runner() -> int :
     pen_width_menu.add_command(label="9px", command=lambda: app.change_pen_width(9))
     menu_bar.add_cascade(label="笔的粗细", menu=pen_width_menu)
 
-    # 橡皮的大小调节子菜单
+    # 创建橡皮的大小调节子菜单
     eraser_width_menu = tk.Menu(menu_bar, tearoff=0)
     eraser_width_menu.add_command(label="1px", command=lambda: app.change_eraser_width(1))
     eraser_width_menu.add_command(label="5px", command=lambda: app.change_eraser_width(5))
@@ -731,26 +733,105 @@ def runner() -> int :
     eraser_width_menu.add_command(label="20px", command=lambda: app.change_eraser_width(20))
     menu_bar.add_cascade(label="橡皮大小", menu=eraser_width_menu)
 
-    # 橡皮擦子菜单
-    menu_bar.add_command(label="使用橡皮", command=app.use_eraser)
-
-    # # 清空画布子菜单
-    # menu_bar.add_command(label="重载白板", command=app.clear_canvas)
-
-    # # 保存当前页子菜单
-    # menu_bar.add_command(label="保存当前页面", command=app.save_current_page)
-
-    # # 保存所有页子菜单
-    # menu_bar.add_command(label="保存所有页面", command=app.save_all_pages)
-
-    # 保存图片
+    # 创建保存图片按钮并添加到菜单栏中
     menu_bar.add_command(label="保存图片", command=lambda: save_as_png())
 
-    # 打开官网
-    menu_bar.add_command(label="直达官网", command=app.open_website)
+    function_menu = tk.Menu(menu_bar, tearoff=0)
+    # 创建抽奖按钮并添加到菜单栏中
+    function_menu.add_command(label="抽奖", command=app.choujiang)
+    # 创建计时器按钮并添加到菜单栏中
+    function_menu.add_command(label="计时器", command=app.time)
+    menu_bar.add_cascade(label="功能", menu=function_menu)
 
-    # 关于软件
-    menu_bar.add_command(label="关于软件", command=app.about)
+    more_menu = tk.Menu(menu_bar, tearoff=0)
+    # 创建打开官网按钮并添加到菜单栏中
+    more_menu.add_command(label="直达官网", command=app.open_website)
+    # 创建关于软件按钮并添加到菜单栏中
+    more_menu.add_command(label="关于软件", command=app.about)
+    # 创建最小化按钮并添加到菜单栏中
+    more_menu.add_command(label="最小化", command=minimize_window)
+    # 创建关闭按钮并添加到菜单栏中
+    more_menu.add_command(label="关闭", command=app.close_window)
+    menu_bar.add_cascade(label="更多", menu=more_menu)
+
+# def runner() -> int :
+#     # 添加一个菜单栏，用于选择颜色和橡皮的大小
+#     menu_bar = tk.Menu(root)
+#     root.config(menu=menu_bar)
+#
+#     # 创建抽奖按钮
+#     close_button = ttk.Button(root, text="抽奖", command=app.choujiang)
+#     close_button.pack(side="left", padx=10, pady=10)
+#
+#     # 创建时间按钮
+#     close_button = ttk.Button(root, text="计时器", command=app.time)
+#     close_button.pack(side="left", padx=10, pady=10)
+#
+#     def minimize_window():
+#         root.iconify()
+#     # 创建最小化按钮
+#     minimize_button = ttk.Button(root, text="最小化", command=minimize_window)
+#     minimize_button.pack(side="left", padx=10, pady=10)
+#
+#     # 创建关闭按钮
+#     close_button = ttk.Button(root, text="关闭", command=app.close_window)
+#     close_button.pack(side="left", padx=10, pady=10)
+#     # 画笔
+#     menu_bar.add_command(label="使用画笔", command=app.activate_drawing)
+#     # 绘制图形
+#     draw_graphics = tk.Menu(menu_bar, tearoff=0)
+#     draw_graphics.add_command(label="直线", command=app.start_drawing_line)
+#     draw_graphics.add_command(label="虚线", command=app.start_drawing_dotted_line)
+#     draw_graphics.add_command(label="矩形", command=app.start_drawing_rectangle)
+#     draw_graphics.add_command(label="三角形", command=app.start_drawing_triangle)
+#     draw_graphics.add_command(label="圆", command=app.switch_to_circle)
+#     menu_bar.add_cascade(label="绘画图像", menu=draw_graphics)
+#     # 颜色子菜单
+#     color_menu = tk.Menu(menu_bar, tearoff=0)
+#     color_menu.add_command(label="黑色", command=lambda: app.change_color("black"))
+#     color_menu.add_command(label="红色", command=lambda: app.change_color("red"))
+#     color_menu.add_command(label="绿色", command=lambda: app.change_color("green"))
+#     color_menu.add_command(label="蓝色", command=lambda: app.change_color("blue"))
+#     # 新增更多颜色选项
+#     color_menu.add_command(label="自定义颜色", command=app.choose_color)
+#     menu_bar.add_cascade(label="颜色", menu=color_menu)
+#
+#     # 笔的大小调节子菜单
+#     pen_width_menu = tk.Menu(menu_bar, tearoff=0)
+#     pen_width_menu.add_command(label="3px", command=lambda: app.change_pen_width(3))
+#     pen_width_menu.add_command(label="5px", command=lambda: app.change_pen_width(5))
+#     pen_width_menu.add_command(label="7px", command=lambda: app.change_pen_width(7))
+#     pen_width_menu.add_command(label="9px", command=lambda: app.change_pen_width(9))
+#     menu_bar.add_cascade(label="笔的粗细", menu=pen_width_menu)
+#
+#     # 橡皮的大小调节子菜单
+#     eraser_width_menu = tk.Menu(menu_bar, tearoff=0)
+#     eraser_width_menu.add_command(label="1px", command=lambda: app.change_eraser_width(1))
+#     eraser_width_menu.add_command(label="5px", command=lambda: app.change_eraser_width(5))
+#     eraser_width_menu.add_command(label="10px", command=lambda: app.change_eraser_width(10))
+#     eraser_width_menu.add_command(label="20px", command=lambda: app.change_eraser_width(20))
+#     menu_bar.add_cascade(label="橡皮大小", menu=eraser_width_menu)
+#
+#     # 橡皮擦子菜单
+#     menu_bar.add_command(label="使用橡皮", command=app.use_eraser)
+#
+#     # # 清空画布子菜单
+#     # menu_bar.add_command(label="重载白板", command=app.clear_canvas)
+#
+#     # # 保存当前页子菜单
+#     # menu_bar.add_command(label="保存当前页面", command=app.save_current_page)
+#
+#     # # 保存所有页子菜单
+#     # menu_bar.add_command(label="保存所有页面", command=app.save_all_pages)
+#
+#     # 保存图片
+#     menu_bar.add_command(label="保存图片", command=lambda: save_as_png())
+#
+#     # 打开官网
+#     menu_bar.add_command(label="直达官网", command=app.open_website)
+#
+#     # 关于软件
+#     menu_bar.add_command(label="关于软件", command=app.about)
 
 
 # def check_update() :
@@ -810,20 +891,3 @@ if __name__ == '__main__':
     root.iconphoto(True, icon_image)
     runner()
     root.mainloop()
-
-# 后续完成的功能：
-# 1、优化书写时卡顿，
-# 2、增加抗锯齿，
-# 3、支持屏幕批注、
-# 4、支持PPT.dll，PPT批注，
-# 5、支持单指、多指书写，
-# 6、双指缩放，移动，
-# 7、图形识别，
-# 8、画几何图形，
-# 9、背景颜色改变，
-# 10、笔画选择、移动，克隆、旋转、删除，
-# 11、视频展台以及其批注等功能,支持导入图片等类型文件的功能
-# 12、保存独有后缀文件，并可以打开，一键生成所有页的PDF、Image,
-# 13、目录可以查看缩略图,
-# 14、重画icon，优化部分图标，重写readme，开源，使用github action编译，上传release，
-# 15、支持检测并更新的功能，优化界面布局。
