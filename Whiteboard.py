@@ -82,7 +82,7 @@ class AnnotationApp:
         self.screen_height = root.winfo_screenheight()  
 
         # 定义生成画布Canvas
-        self.canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
+        self.canvas = tk.Canvas(root, width=600, height=600, bg='white', highlightthickness=0)  # 设置画布大小为width=root.winfo_screenwidth(), height=root.winfo_screenheight()-105
         self.canvas.pack(side="top")
 
         # 定义初始笔的粗细
@@ -178,7 +178,7 @@ class AnnotationApp:
             if self.iferaser == True:  # 使用橡皮擦
                 self.canvas.create_oval(event.x - self.current_eraser_width, event.y - self.current_eraser_width,
                                         event.x + self.current_eraser_width, event.y + self.current_eraser_width,
-                                        fill=self.canvas.cget("background"), outline="")
+                                        fill=self.canvas.cget("background"), outline="",tags='eraser')
             else:  # 使用笔
                 distance = ((event.x - self.start_x) ** 2 + (event.y - self.start_y) ** 2) ** 0.5  # 计算距离
                 acceleration = 0.6  # 设置加速度
@@ -286,10 +286,10 @@ class AnnotationApp:
             #     item.pop(2)
             #     item.pop(3)
             # print(item)
-            if item[-2] == self.canvas.cget("background") and item[-1] == 'pen':  # 使用橡皮擦
+            if item[-1] == 'eraser':  # 使用橡皮擦
                 print(item)
-                self.canvas.create_line(item[0], item[1], item[2], item[3]
-                                         ,fill=self.canvas.cget("background"), width=item[5],tags='pen')
+                self.canvas.create_oval(item[0], item[1], item[2], item[3]
+                                         ,fill=item[4], outline=item[5],tags='eraser')
             if item[-1] == 'pen':  
                 print(item)
                 self.canvas.create_line(item[0], item[1], item[2], item[3], item[4] ,item[5]
@@ -312,8 +312,8 @@ class AnnotationApp:
     def save_page_content(self):
         content = []
         for item in self.canvas.find_all():
-            if self.canvas.itemcget(item,'tags') == 'pen' and self.canvas.itemcget(item, "fill") == self.canvas.cget("background"):  # 使用橡皮擦
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+            if self.canvas.itemcget(item,'tags') == 'eraser':  # 使用橡皮擦
+                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'pen':  # 使用笔
                 content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'dotted':
