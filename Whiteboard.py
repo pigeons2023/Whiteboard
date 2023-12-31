@@ -288,44 +288,40 @@ class AnnotationApp:
             # print(item)
             if item[-1] == 'eraser':  # 使用橡皮擦
                 print(item)
-                self.canvas.create_oval(item[0], item[1], item[2], item[3]
-                                         ,fill=item[4], outline=item[5],tags='eraser')
+                self.canvas.create_oval(item[0],fill=item[1], outline=item[2],tags='eraser')
             if item[-1] == 'pen':  
                 print(item)
-                self.canvas.create_line(item[0], item[1], item[2], item[3], item[4] ,item[5]
-                                        ,fill=item[6], width=item[7],tags='pen')
+                self.canvas.create_line(item[0],fill=item[1], width=item[2], tags='pen')
             if item[-1] == 'line':
-                self.canvas.create_line(item[0], item[1], item[2], item[3],
-                                        fill=item[4], width=item[5],tags='line')
+                self.canvas.create_line(item[0],fill=item[1], width=item[2],tags='line')
             if item[-2] == 'dotted':
-                self.canvas.create_line(item[0], item[1], item[2], item[3],
-                                        fill=item[4], width=item[5],dash=item[-1],tags='dotted')
+                self.canvas.create_line(item[0],fill=item[1], width=item[2],dash=item[-1],tags='dotted')
             if item[-1] == 'rectangle':
-                self.canvas.create_rectangle(item[0],item[1],item[2],item[3],outline=item[4],width=item[5],tags='rectangle')
+                self.canvas.create_rectangle(item[0],outline=item[1],width=item[2],tags='rectangle')
             if item[-1] == 'triangle':
                 # print(len(item))
-                self.canvas.create_polygon(item[0],item[1],item[2],item[3],item[4],item[5],outline=item[6],width=item[7],fill=item[8],tags='triangle')
+                self.canvas.create_polygon(item[0],outline=item[1],width=item[2],fill=item[3],tags='triangle')
             if item[-1] == 'circle':
-                self.canvas.create_oval(item[0],item[1],item[2],item[3],outline=item[4],width=item[5],tags='circle')
+                self.canvas.create_oval(item[0],outline=item[1],width=item[2],tags='circle')
 
     
     def save_page_content(self):
         content = []
         for item in self.canvas.find_all():
             if self.canvas.itemcget(item,'tags') == 'eraser':  # 使用橡皮擦
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item,'tags')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'pen':  # 使用笔
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'dotted':
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags'), self.canvas.itemcget(item,'dash')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags'), self.canvas.itemcget(item,'dash')])
             if self.canvas.itemcget(item,'tags') == 'line':  # 使用直线
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "fill"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'rectangle':
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'triangle':
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'fill') ,self.canvas.itemcget(item,'tags')])
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'fill') ,self.canvas.itemcget(item,'tags')])
             if self.canvas.itemcget(item,'tags') == 'circle':
-                content.append(self.canvas.coords(item) + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])    
+                content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])    
 
         self.pages[self.page_number-1] = content
     
