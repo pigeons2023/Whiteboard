@@ -131,27 +131,29 @@ class AnnotationApp:
         self.pen_label = ttk.Label(self.root, text="笔的粗细:")
         self.pen_label.pack(side="left", padx=10, pady=10)
         self.pen_width_var = tk.DoubleVar()
-        self.pen_width_scale = ttk.Scale(self.root, from_=0, to=15, orient=tk.HORIZONTAL, variable=self.pen_width_var, command=self.change_pen_width, length=275)
+        self.pen_width_scale = ttk.Scale(self.root, from_=0, to=15, orient=tk.HORIZONTAL, variable=self.pen_width_var, command=self.schedule_change_pen_width, length=275)
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
 
-        self.pen_width_value_label = ttk.Label(self.root, text="%.1f" % self.pen_width_var.get())
-        self.pen_width_value_label.pack(side="left", padx=10, pady=10)
 
         # 橡皮的调节控件
         self.iferaser = False  # 是否使用橡皮
         self.eraser_label = ttk.Label(self.root, text="橡皮大小:")
         self.eraser_label.pack(side="left", padx=10, pady=10)
         self.eraser_width_var = tk.DoubleVar()
-        self.eraser_width_scale = ttk.Scale(self.root, from_=0, to=50, orient=tk.HORIZONTAL, variable=self.eraser_width_var, command=self.change_eraser_width, length=225)
+        self.eraser_width_scale = ttk.Scale(self.root, from_=0, to=50, orient=tk.HORIZONTAL, variable=self.eraser_width_var, command=self.schedule_change_eraser_width, length=225)
         self.eraser_width_scale.set(self.eraser_width)
         self.eraser_width_scale.pack(side="left", padx=10, pady=10)
 
-        self.eraser_width_value_label = ttk.Label(self.root, text="%.1f" % self.eraser_width_var.get())
-        self.eraser_width_value_label.pack(side="left", padx=10, pady=10)
 
         # 定义窗口关闭事件处理函数
         root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # 后移橡皮和笔的控件
+        self.pen_width_value_label = ttk.Label(self.root, text="%.1f" % self.pen_width_var.get())
+        self.pen_width_value_label.pack(side="left", padx=10, pady=10)
+        self.eraser_width_value_label = ttk.Label(self.root, text="%.1f" % self.eraser_width_var.get())
+        self.eraser_width_value_label.pack(side="left", padx=10, pady=10)
 
         #CSV示例
         #写入标题行  
@@ -161,6 +163,12 @@ class AnnotationApp:
         #            Charlie  ,    7 
         #            David    ,    8
         #            Eve      ,    9 
+
+
+    def schedule_change_pen_width(self, *args):
+        root.after(0, self.change_pen_width, self.pen_width_var.get())
+    def schedule_change_eraser_width(self, *args):
+        root.after(0, self.change_eraser_width, self.eraser_width_var.get())
 
     def activate_drawing(self):
         self.iferaser = False
@@ -287,10 +295,10 @@ class AnnotationApp:
             #     item.pop(3)
             # print(item)
             if item[-1] == 'eraser':  # 使用橡皮擦
-                print(item)
+                # print(item)
                 self.canvas.create_oval(item[0],fill=item[1], outline=item[2],tags='eraser')
             if item[-1] == 'pen':  
-                print(item)
+                # print(item)
                 self.canvas.create_line(item[0],fill=item[1], width=item[2], tags='pen')
             if item[-1] == 'line':
                 self.canvas.create_line(item[0],fill=item[1], width=item[2],tags='line')
