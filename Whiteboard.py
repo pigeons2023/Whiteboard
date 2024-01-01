@@ -134,6 +134,8 @@ class AnnotationApp:
         self.pen_width_scale = ttk.Scale(self.root, from_=0, to=15, orient=tk.HORIZONTAL, variable=self.pen_width_var, command=self.schedule_change_pen_width, length=275)
         self.pen_width_scale.set(self.pen_width)
         self.pen_width_scale.pack(side="left", padx=10, pady=10)
+        self.pen_width_value_label = ttk.Label(self.root, text="%.1f" % self.pen_width_var.get())
+        self.pen_width_value_label.pack(side="left", padx=10, pady=10)
 
 
         # 橡皮的调节控件
@@ -144,16 +146,12 @@ class AnnotationApp:
         self.eraser_width_scale = ttk.Scale(self.root, from_=0, to=50, orient=tk.HORIZONTAL, variable=self.eraser_width_var, command=self.schedule_change_eraser_width, length=225)
         self.eraser_width_scale.set(self.eraser_width)
         self.eraser_width_scale.pack(side="left", padx=10, pady=10)
+        self.eraser_width_value_label = ttk.Label(self.root, text="%.1f" % self.eraser_width_var.get())
+        self.eraser_width_value_label.pack(side="left", padx=10, pady=10)
 
 
         # 定义窗口关闭事件处理函数
         root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # 后移橡皮和笔的控件
-        self.pen_width_value_label = ttk.Label(self.root, text="%.1f" % self.pen_width_var.get())
-        self.pen_width_value_label.pack(side="left", padx=10, pady=10)
-        self.eraser_width_value_label = ttk.Label(self.root, text="%.1f" % self.eraser_width_var.get())
-        self.eraser_width_value_label.pack(side="left", padx=10, pady=10)
 
         #CSV示例
         #写入标题行  
