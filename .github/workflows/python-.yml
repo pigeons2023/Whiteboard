@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+env:
+  sha: ${{steps.read_sha1.outputs.sha}}
+  version: ${{steps.read_version.outputs.version}}
+
+
 jobs:
   build:
     permissions: write-all
@@ -48,10 +53,8 @@ jobs:
       # if: contains(github.event.head_commit.message, 'new version')
       id: create_test_release
       uses: softprops/action-gh-release@v1
-      env:
-        sha: ${{steps.read_sha1.outputs.sha}}
       with:
-        tag_name: '$sha'
+        tag_name: ${{ env.sha }}
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
@@ -62,10 +65,8 @@ jobs:
       if: contains(github.event.head_commit.message, 'new version')
       id: create_release
       uses: softprops/action-gh-release@v1
-      env:
-        version: ${{steps.read_version.outputs.version}}
       with:
-        tag_name: '$version'
+        tag_name: ${{ env.version }}
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
