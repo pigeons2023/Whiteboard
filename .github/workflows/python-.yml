@@ -37,21 +37,20 @@ jobs:
       run: |
         $version = Get-Content -Raw -Path v.json | ConvertFrom-Json | Select-Object -ExpandProperty version
         Write-Output "Version read from v.json: $version"
-        echo "VERSION='$version'" >> "$GITHUB_OUTPUT"
-        echo "VERSION='$version'"
+        echo "VERSION='$version'" >> temp_version
+        
     - name: read sha1
       id: read_sha1
       run: |
         $short_sha = $env:GITHUB_SHA.Substring(0, 7)
-        echo "SHA='$short_sha'" >> "$GITHUB_OUTPUT"
-        echo "SHA='$short_sha'"
+        echo "SHA='$short_sha'" >> temp_sha
         
     - name: Create test Release
       # if: contains(github.event.head_commit.message, 'new version')
       id: create_test_release
       uses: softprops/action-gh-release@v1
       env:
-        sha: ${{steps.read_sha1.outputs.sha}}
+        SHA_FILE: temp_sha
       with:
         tag_name: ${{ env.sha }}
         files: |
@@ -65,7 +64,7 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       env:
-        version: ${{steps.read_version.outputs.version}}
+        VERSION_FILE: temp_version
       with:
         tag_name: ${{ env.version }}
         files: |
