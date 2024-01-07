@@ -47,7 +47,7 @@ jobs:
 
     - name: Debugging Info
       run: |
-        echo "SHA from previous step: ${{env:sha}}"
+        echo "SHA from previous step: ${env:sha}"
         echo "Token: ${{ secrets.GITHUB_TOKEN }}"
         
     - name: Create test Release
@@ -55,7 +55,7 @@ jobs:
       id: create_test_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{env:sha}}
+        tag_name: ${env:sha}
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
