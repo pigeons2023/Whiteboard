@@ -47,7 +47,7 @@ jobs:
 
     - name: Debugging Info
       run: |
-        echo "SHA from previous step: ${{ steps.read_sha1.outputs.sha }}"
+        echo "SHA from previous step: ${env:sha}"
         echo "Token: ${{ secrets.GITHUB_TOKEN }}"
         
     - name: Create test Release
