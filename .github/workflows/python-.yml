@@ -20,19 +20,25 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install -r requirements.txt  # 如果有依赖，替换成你的依赖文件
+        pip install pillow webbrowser httpx  # 如果有依赖，替换成你的依赖文件
 
     - name: Build Windows Executable
       run: |
-        if [ "$(git log -1 --pretty=%B)" = "new version" ]; then
-          pyinstaller --onefile Whiteboard.py --output dist/Whiteboard.exe -i Whiteboard.ico # 替换成你的脚本文件名
-        fi
+        # if [ "$(git log -1 --pretty=%B)" = "new version" ]; then
+        #   pyinstaller --onefile Whiteboard.py --output dist/Whiteboard.exe -i Whiteboard.ico # 替换成你的脚本文件名
+        #   pyinstaller --onefile updata.py --output dist/updata.exe -i Whiteboard.ico
+        # fi
+        pyinstaller --onefile Whiteboard.py --output dist/Whiteboard.exe -i Whiteboard.ico # 替换成你的脚本文件名
+        pyinstaller --onefile updata.py --output dist/updata.exe -i Whiteboard.ico
 
     - name: Create Release
-      if: contains(github.event.head_commit.message, 'new version')
+      # if: contains(github.event.head_commit.message, 'new version')
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: dist/Whiteboard.exe  # 替换成 pyinstaller 输出的可执行文件路径
+        files: |
+          # 替换成 pyinstaller 输出的可执行文件路径
+          dist/Whiteboard.exe
+          dist/updata.exe
         token: ${{ secrets.GITHUB_TOKEN }}
         release_name: Release ${{ github.event.after }}
