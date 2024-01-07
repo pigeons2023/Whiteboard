@@ -51,7 +51,7 @@ jobs:
       env:
         sha: ${{steps.read_sha1.outputs.sha}}
       with:
-        tag_name: $sha
+        tag_name: '$sha'
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
@@ -65,7 +65,7 @@ jobs:
       env:
         version: ${{steps.read_version.outputs.version}}
       with:
-        tag_name: $version
+        tag_name: '$version'
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
