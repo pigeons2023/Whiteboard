@@ -20,7 +20,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install pillow httpx easygui # 如果有依赖，替换成你的依赖文件
+        pip install pillow httpx easygui pyinstaller # 如果有依赖，替换成你的依赖文件
 
     - name: Build Windows Executable
       run: |
