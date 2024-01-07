@@ -11,10 +11,6 @@ jobs:
     runs-on: windows-latest
 
 
-    env:
-      sha: ${{steps.read_sha1.outputs.sha}}
-      version: ${{steps.read_version.outputs.version}}
-
     steps:
     
     - name: Checkout Repository
