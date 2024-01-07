@@ -50,7 +50,7 @@ jobs:
       id: create_test_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: "$sha"
+        tag_name: '${{ steps.read_sha1.outputs.sha }}'
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
@@ -62,7 +62,7 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: "$version"
+        tag_name: '${{ steps.read_version.outputs.version }}'
         files: |
           dist/Whiteboard.exe
           dist/updata.exe
