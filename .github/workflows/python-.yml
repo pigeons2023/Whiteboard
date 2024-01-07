@@ -31,11 +31,19 @@ jobs:
         pyinstaller --onefile Whiteboard.py --distpath dist -i Whiteboard.ico # 替换成你的脚本文件名
         pyinstaller --onefile updata.py --distpath dist -i Whiteboard.ico
 
+    - name: Read Version from v.json
+      id: read_version
+      run: |
+        $version = Get-Content -Raw -Path v.json | ConvertFrom-Json | Select-Object -ExpandProperty version
+        Write-Output "Version read from v.json: $version"
+        echo "::set-output name=version::$version"
+        
     - name: Create Release
       # if: contains(github.event.head_commit.message, 'new version')
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
+        tags: ${{ steps.read_version.outputs.version }}
         files: |
           # 替换成 pyinstaller 输出的可执行文件路径
           dist/Whiteboard.exe
