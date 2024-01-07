@@ -38,14 +38,25 @@ jobs:
         Write-Output "Version read from v.json: $version"
         echo "::set-output name=version::$version"
         
-    - name: Create Release
-      # if: contains(github.event.head_commit.message, 'new version')
-      id: create_release
+    - name: Create test Release
+      if: contains(github.event.head_commit.message, 'new version')
+      id: create_test_release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.read_version.outputs.version }}
         files: |
-          # 替换成 pyinstaller 输出的可执行文件路径
+          dist/Whiteboard.exe
+          dist/updata.exe
+        token: ${{ secrets.GITHUB_TOKEN }}
+        release_name: Release ${{ github.event.after }}
+        
+    - name: Create Release
+      if: contains(github.event.head_commit.message, 'new version')
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        files: |
           dist/Whiteboard.exe
           dist/updata.exe
         token: ${{ secrets.GITHUB_TOKEN }}
