@@ -28,8 +28,8 @@ jobs:
         #   pyinstaller --onefile Whiteboard.py --output dist/Whiteboard.exe -i Whiteboard.ico # 替换成你的脚本文件名
         #   pyinstaller --onefile updata.py --output dist/updata.exe -i Whiteboard.ico
         # fi
-        pyinstaller --onefile Whiteboard.py --output dist/Whiteboard.exe -i Whiteboard.ico # 替换成你的脚本文件名
-        pyinstaller --onefile updata.py --output dist/updata.exe -i Whiteboard.ico
+        pyinstaller --onefile Whiteboard.py --distpath dist -i Whiteboard.ico # 替换成你的脚本文件名
+        pyinstaller --onefile updata.py --distpath dist -i Whiteboard.ico
 
     - name: Create Release
       # if: contains(github.event.head_commit.message, 'new version')
