@@ -856,42 +856,6 @@ def runner() -> int:
 #     menu_bar.add_command(label="关于软件", command=app.about)
 
 
-# def check_update() :
-#     try:
-#         if os.path.exists("Whiteboard_New.exe"):
-#             try:
-#                 os.remove("Whiteboard_New.exe")
-#             except: pass
-#         data = httpx_get(url=cdn_url)
-#         version_new = data.json()['version']
-#         if version_new != version :
-#             choose = eg.buttonbox("检测到新版本，是否更新？",title='',choices=('NO','YES'))
-#             print("new version found")
-#             if os.path.exists("updata.vbs"):
-#                     try:
-#                         os.remove("updata.vbs")
-#                     except: pass
-#             if not os.path.exists("updata.vbs"):
-#                 try:
-#                     with open("updata.vbs",'w',encoding='utf-8') as f:
-#                         f.write(upgrade_vbs)
-#                 except: pass
-#             if choose == 'YES':
-#                 print("user allowed download")
-#                 d_url = data.json()['download_url']
-#                 download = httpx_get(url=d_url)
-#                 with open("Whiteboard_New.exe","wb") as f :
-#                     f.write(download.content)
-#                 if os.path.exists("Whiteboard_New.exe"):
-#                     try:
-#                         os.system("cmd.exe /c start updata.vbs")
-#                     except: pass
-#             else:
-#                 print("cancel")
-#         else:
-#             print("no new version")
-#     except: pass
-#     return 0
 
 def check_updata():
     try:
