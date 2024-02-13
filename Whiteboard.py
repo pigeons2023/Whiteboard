@@ -48,6 +48,7 @@ from tempfile import gettempdir
 import tkinter as tk
 from tkinter import messagebox
 import threading
+import json
 # from httpx import get as httpx_get
 # import easygui as eg
 
@@ -329,7 +330,9 @@ class AnnotationApp:
             if self.canvas.itemcget(item,'tags') == 'circle':
                 content.append([self.canvas.coords(item),] + [self.canvas.itemcget(item, "outline"), self.canvas.itemcget(item, "width"), self.canvas.itemcget(item,'tags')])    
 
-        self.pages[self.page_number-1] = content
+        try:
+            self.pages[self.page_number-1] = content
+        except IndexError : pass
     
     def save_current_page(self):
         self.save_page_content()
@@ -338,6 +341,19 @@ class AnnotationApp:
         for i in range(len(self.pages)):
             self.page_number = i+1
             self.save_page_content()
+        file_path = filedialog.asksaveasfilename(initialfile='saved',filetypes=[("json Files", "*.json")])
+        with open(f"{file_path}.json",mode='w',encoding='utf-8') as f:
+            json_datas = json.dumps(self.pages,ensure_ascii=False,indent=4)
+            f.write(json_datas)
+    
+    def load_all_pages(self):
+        file_path = filedialog.askopenfilename(initialfile='saved',filetypes=[("json Files", "*.json")])
+        with open(file_path,mode='r',encoding='utf-8') as f:
+            json_datas: list
+            json_datas = json.loads(f.read())
+            self.pages = json_datas
+            self.redraw_canvas()
+
  
     def about(self):
         messagebox.showinfo("关于软件", "软件名称：Whiteboard\n版本：0.7\n作者：Pigeons2023 wuqi9277")
@@ -744,6 +760,10 @@ def runner() -> int:
     # 创建计时器按钮并添加到菜单栏中
     function_menu.add_command(label="计时器", command=app.time)
     menu_bar.add_cascade(label="功能", menu=function_menu)
+
+    # 保存所有页子菜单
+    menu_bar.add_command(label="保存所有页面", command=app.save_all_pages)
+    menu_bar.add_command(label="加载所有页面", command=app.load_all_pages)
 
     more_menu = tk.Menu(menu_bar, tearoff=0)
     # 创建打开官网按钮并添加到菜单栏中
