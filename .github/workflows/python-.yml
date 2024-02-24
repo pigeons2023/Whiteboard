@@ -57,6 +57,14 @@ jobs:
     #     token: ${{ secrets.GITHUB_TOKEN }}
     #     # release_name: Release ${{ github.event.after }}
         
+    - name: install 7-zip
+      id: install-7-zip
+      run: winget install 7zip
+
+    - name: build install application by 7z
+      id: build-with-7z
+      run: 7z.exe a -sfx Whiteboard-build.exe dist/Whiteboard.exe dist/updata.exe
+
     - name: Create Release
       # if: contains(github.event.head_commit.message, 'new version')
       id: create_release
@@ -65,8 +73,6 @@ jobs:
         tag_name: 'pre-build'
         # release_name: Release ${{ github.ref_name }}
         prerelease: true
-        files: |
-          dist/Whiteboard.exe
-          dist/updata.exe
+        files: Whiteboard-build.exe
         token: ${{ secrets.GITHUB_TOKEN }}
         # release_name: Release ${{ github.event.after }}
