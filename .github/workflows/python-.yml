@@ -57,9 +57,11 @@ jobs:
     #     token: ${{ secrets.GITHUB_TOKEN }}
     #     # release_name: Release ${{ github.event.after }}
         
-    - name: install 7-zip
-      id: install-7-zip
-      run: winget install 7zip
+    - name: install choco and 7-zip
+      id: install-tools
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        choco install 7zip -y
 
     - name: build install application by 7z
       id: build-with-7z
